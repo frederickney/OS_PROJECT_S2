@@ -10,17 +10,28 @@ import binascii
 
 class minix_file_system(object):
     def __init__(self, filename):
-        self.filename = filename
-
+#        self.filename = filename
+        
         self.disk = bloc_device(BLOCK_SIZE, "m.img")
+        
+        self.sss = minix_superbloc(self.disk)
+        e = self.sss.s_zmap_blocks
+        
         a = bitarray(endian='little')
         a.frombytes(self.disk.read_bloc(2))
         self.inode_map = a
         
-#        self.zone_map = BLOCK_SIZE
+        b = bitarray(endian='little')
+        b.frombytes(self.disk.read_bloc(3))
+        
+        c = bitarray(endian='little')
+        c.frombytes(self.disk.read_bloc(4))
+        
+        d = bitarray(endian='little')
+        d.frombytes(self.disk.read_bloc(5))
+        
+        self.zone_map = b + c + d
 
-#        bitarray inode_map = bitmap inodes libres sur fichier img
-#        bitarray zonemap = bitmap des blocs de données libres sur le fichier img
         return
     
     #return the first free inode number available
