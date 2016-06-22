@@ -10,3 +10,10 @@
 minixfs.img
 minixfs_lab1.img
 .idea/
+__pycache__
+*.pyc
+m.img
+ftp_mqtt
+HOST
+client.py
+ftp_mqtt.py
