@@ -1,0 +1,12 @@
+*.xml
+*.iml
+.idea/*
+.idea/*.xml
+.idea/*.iml
+.idea/inspectionProfiles/*.xml
+.idea/inspectionProfiles/*.iml
+.idea/scopes/*.xml
+.idea/scopes/*.iml
+minixfs.img
+minixfs_lab1.img
+.idea/
