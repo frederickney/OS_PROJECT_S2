@@ -15,11 +15,10 @@ request = request_obj.get_struct()
 request_packed = request_struct.pack(*request)
 SD.sendall(request_packed)
 reply_val = SD.recv(len(reply_struct.pack(0, 0, 0)))
-print(len(reply_val))
+print('initial len ' + str(len(reply_val)))
 reply = Reply(reply_val)
-print(reply)
-print(reply.verif_struct(1))
-print(reply.get_error())
+print('verif ' + str(reply.verif_struct(1)))
+print('error ' + str(reply.get_error()))
 Buffer = SD.recv(1024)
 print(Buffer)
 prompt = "\n" + os.environ["HOME"] + ">> "
@@ -31,4 +30,4 @@ prompt = "\n" + os.environ["HOME"] + ">> "
     
 #    s.send(struu)
 
-socket.close()
+connect.close()

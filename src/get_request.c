@@ -76,32 +76,21 @@ cmd_data *get_request(int sd, data *data_struct) {
  * @return char *payload: NULL on error.
  */
 char *get_payload(int sd, data *data_struct) {
-	int bread, totalbread, loop, i;
+	int bread;
 	char *buffer;
-	struct timespec timer;
-	timer.tv_sec = 0;
-	timer.tv_nsec = 1000000L;
-	loop = 3600;
-	i = totalbread = 0;
 	buffer = malloc(sizeof(char) * data_struct->request->length);
-	while( i < loop && totalbread != data_struct->request->length) {
-		if (0 > (bread = read(sd, buffer, data_struct->request->length))) {
-			write(STDIN_FILENO, NULLDATA, strlen(NULLDATA));
-			data_struct->error = 10;
-			return NULL;
-		}
-		else if (bread != data_struct->request->length) {
-			data_struct->payload = strcat(data_struct->payload, buffer);
-			totalbread += bread;
-		}
-		else {
-			data_struct->payload = strcpy(data_struct->payload, buffer);
-			return data_struct->payload;
-		}
-		if(bread == 0) {
-			nanosleep(&timer, NULL);
-			i++;
-		}
+	if (0 > (bread = read(sd, buffer, data_struct->request->length))) {
+		write(STDIN_FILENO, NULLDATA, strlen(NULLDATA));
+		data_struct->error = 10;
+		return NULL;
+	}
+	else if (bread != data_struct->request->length) {
+		data_struct->error = 7;
+		return NULL;
+	}
+	else {
+		data_struct->payload = strcpy(data_struct->payload, buffer);
+		return data_struct->payload;
 	}
 	return data_struct->payload;
 }

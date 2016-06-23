@@ -21,10 +21,10 @@ class Reply(object):
 	HEADER = 0x87878787
 
 	def __init__(self, reply):
-		structure = Struct("!3I")
+		structure = Struct("!I I I")
 		reply_struct = structure.unpack(reply)
 		struct = namedtuple("message", "header error handle")
-		struct = struct(reply_struct)
+		struct = struct(*reply_struct)
 		self.__HEADER = struct.header
 		self.__ERROR = struct.error
 		self.__HANDLE = struct.handle
