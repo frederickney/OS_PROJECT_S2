@@ -16,10 +16,10 @@ class bloc_device(object):
         self.Type = 0x0
         self.Handle += 1
         self.Offset = bloc_num * BLOCK_SIZE
-        self.Length = BLOCK_SIZE
+        self.Length = BLOCK_SIZE * numofblk
         f = open(self.pathname, 'r')
         f.seek(self.Offset, 0)
-        Buffer = f.read(BLOCK_SIZE)
+        Buffer = f.read(self.Length)
         f.close()
         return Buffer
 

@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 #minix est little endian par defaut
 from lib.minixfs.constantes import *
-from collections import namedtuple
-from struct import Struct
-
+from struct import *
 
 class minix_inode(object):
     # inodes can be initializted from given values or
@@ -21,21 +19,24 @@ class minix_inode(object):
             self.i_zone = zone
             self.i_indir_zone = indir_zone
             self.i_dbl_indr_zone = dblr_indir_zone
-        #Structure of inode construction
         else:
-            struct = Struct('<2H2I2B9H')
-            data = namedtuple("minix_inode", "mode uid size time gid nlinks zone1 zone2 zone3 zone4 zone5 zone6 zone7 indir_zone dblr_indir_zone")
-            data = data(struct.unpack(raw_inode))
             self.i_ino = num
-            self.i_mode = data.mode
-            self.i_uid = data.uid
-            self.i_size = data.size
-            self.i_time = data.time
-            self.i_gid = data.gid
-            self.i_nlinks = data.nlinks
-            self.i_zone = [data.zone1, data.zone2, data.zone3, data.zone4, data.zone5, data.zone6, data.zone7]
-            self.i_indir_zone = data.indir_zone
-            self.i_dbl_indr_zone = data.dblr_indir_zone
+            self.i_mode = struct.unpack("<H", raw_inode[0:2])[0]
+            self.i_uid = struct.unpack("<H", raw_inode[2:4])[0]
+            self.i_size = struct.unpack("<I", raw_inode[4:8])[0]
+            self.i_time = struct.unpack("<I", raw_inode[8:12])[0]
+            self.i_gid = struct.unpack("<B", raw_inode[12:13])[0]
+            self.i_nlinks = struct.unpack("<B", raw_inode[13:14])[0]
+            self.i_zone = []
+            self.i_zone.append(struct.unpack("<H", raw_inode[14:16])[0])
+            self.i_zone.append(struct.unpack("<H", raw_inode[16:18])[0])
+            self.i_zone.append(struct.unpack("<H", raw_inode[18:20])[0])
+            self.i_zone.append(struct.unpack("<H", raw_inode[20:22])[0])
+            self.i_zone.append(struct.unpack("<H", raw_inode[22:24])[0])
+            self.i_zone.append(struct.unpack("<H", raw_inode[24:26])[0])
+            self.i_zone.append(struct.unpack("<H", raw_inode[26:28])[0])
+            self.i_indir_zone = struct.unpack("<H", raw_inode[28:30])[0]
+            self.i_dbl_indr_zone = struct.unpack("<H", raw_inode[30:32])[0]
 
     def __eq__(self, other):
         if isinstance(other, minix_inode):
@@ -50,7 +51,7 @@ class minix_inode(object):
                 self.i_indir_zone == other.i_indir_zone and \
                 self.i_dbl_indr_zone == other.i_dbl_indr_zone
 
-    def __repr__(self): #afficher
+    def __repr__(self):
         return "minix_inode("+"num="+str(self.i_ino) + \
             ",mode="+str(self.i_mode) + \
             ",uid="+str(self.i_uid) + \
