@@ -57,11 +57,6 @@ cmd_data *get_request(int sd, data *data_struct) {
 		data_struct->request->length = ntohl(data_struct->request->length);
 		data_struct->request->offset = ntohl(data_struct->request->offset);
 		data_struct->request->type = ntohl(data_struct->request->type);
-		printf("HEADER: %i\n", data_struct->request->header);
-		printf("HANDLE: %i\n", data_struct->request->handle);
-		printf("LENGTH: %i\n", data_struct->request->length);
-		printf("OFFSET: %i\n", data_struct->request->offset);
-		printf("TYPE: %i\n", data_struct->request->type);
 	}
 	return data_struct->request;
 }

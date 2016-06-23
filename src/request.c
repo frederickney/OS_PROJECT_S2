@@ -49,25 +49,25 @@ uint32_t set_request(int sd, char *cmd, data *data_struct) {
 	char *payload;
 	uint32_t i = 0;
 	if (0 == strcmp(cmd, READ)) {
-		data_struct->request->type = CMD_READ;
-		data_struct->request->offset = SIZE;
-		data_struct->request->length = SIZE;
-		data_struct->request->header = REQUEST;
+		data_struct->request->type = htonl(CMD_READ);
+		data_struct->request->offset = htonl(SIZE);
+		data_struct->request->length = htonl(SIZE);
+		data_struct->request->header = htonl(REQUEST);
 	}
 	else if(0 ==  strcmp(cmd, WRITE)){
 		payload = malloc(sizeof(char) * strlen(TEST));
 		payload = TEST;
 		data_struct->payload = payload;
-		data_struct->request->header = REQUEST;
-		data_struct->request->type = CMD_WRITE;
-		data_struct->request->offset = SIZE;
-		data_struct->request->length = strlen(TEST);
+		data_struct->request->header = htonl(REQUEST);
+		data_struct->request->type = htonl(CMD_WRITE);
+		data_struct->request->offset = htonl(SIZE);
+		data_struct->request->length = htonl(strlen(TEST));
 	}
 	else if(0 == strcmp(cmd, STREXIT)) {
-		data_struct->request->header = REQUEST;
-		data_struct->request->type = EXIT;
-		data_struct->request->offset = 0;
-		data_struct->request->length = 0;
+		data_struct->request->header = htonl(REQUEST);
+		data_struct->request->type = htonl(EXIT);
+		data_struct->request->offset = htonl(0);
+		data_struct->request->length = htonl(0);
 	}
 	else
 		return 1;
