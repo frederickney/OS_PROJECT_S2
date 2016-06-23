@@ -1,14 +1,28 @@
 # -*- coding: utf-8 -*-
 # emulate a simple bloc device using a file
 # reading it only by bloc units
-from lib.minixfs.constantes import *
+from constantes import *
+import socket
+import struct
+from structure import  *
+
 
 
 class bloc_device(object):
+    Header = 0x76767676
+    Type = 0
+    Handle = 0
+    Offset = 0
+    Length = 0
+
     def __init__(self, blksize, pathname):
-        self.Handle = 0
-        self.blksize = blksize
         self.pathname = pathname
+        self.blksize = blksize
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        #self.sd = self.socket.connect(("192.168.1.19", 6600))
+        self.request_struct = struct.Struct("!5I")
+        self.reply_struct = struct.Struct("!3I")
+        self.fd = open(pathname, 'rw+')
         return
 
     def read_bloc(self, bloc_num, numofblk=1):
@@ -17,21 +31,13 @@ class bloc_device(object):
         self.Handle += 1
         self.Offset = bloc_num * BLOCK_SIZE
         self.Length = BLOCK_SIZE * numofblk
-        f = open(self.pathname, 'r')
-        f.seek(self.Offset, 0)
-        Buffer = f.read(self.Length)
-        f.close()
-        return Buffer
+        self.fd.seek(self.Offset, 0)
+        buffer_read = self.fd.read(self.Length)
+        return buffer_read
 
     def write_bloc(self, bloc_num, bloc):
-        self.Header = 0x76767676
-        self.Type = 0x1
-        self.Handle += 1
-        self.Offset = bloc_num * BLOCK_SIZE
-        self.Length = len(bloc)
-        self.Payload = bloc
-        f = open(self.pathname, 'rw+')
-        f.seek(self.Offset, 0)
-        f.write(bloc)
-        f.close()
-        return 
+        self.fd.seek(self.blksize * bloc_num)
+        buffer_to_write = buffer(bloc, 0, BLOCK_SIZE)
+        for block in range(BLOCK_SIZE):
+            self.fd.write(buffer_to_write[block])
+        return
