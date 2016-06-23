@@ -17,27 +17,27 @@
 #define TEST "test"
 
 
-int send_request(int sd, data *data_struct) {
-	int i = 0;
+uint32_t send_request(int sd, data *data_struct) {
+	uint32_t i = 0;
 	ssize_t bwrite = 0;
 	switch (data_struct->request->type) {
 		case CMD_WRITE:
 			if (0 > (bwrite = write(sd, (void *) data_struct->request, sizeof(cmd_data))))
-				i = -1;
+				i = 1;
 			else if(bwrite < sizeof(cmd_data))
-				i = -2;
+				i = 2;
 			else if (0 > (bwrite = write(sd, (void *) data_struct->payload, strlen(data_struct->payload))))
-				i = -3;
+				i = 3;
 			else if (bwrite < data_struct->request->length)
-				i = -4;
+				i = 4;
 			else
 	            i = 0;
 	        break;
 		default:
 			if (0 > (bwrite = write(sd, (void *) data_struct->request, sizeof(cmd_data))))
-				i = -1;
+				i = 1;
 			else if(bwrite < sizeof(cmd_data))
-				i = -2;
+				i = 2;
 			else
 	            i = 0;
 	        break;
@@ -45,9 +45,9 @@ int send_request(int sd, data *data_struct) {
 	return i;
 }
 
-int set_request(int sd, char *cmd, data *data_struct) {
+uint32_t set_request(int sd, char *cmd, data *data_struct) {
 	char *payload;
-	int i = 0;
+	uint32_t i = 0;
 	if (0 == strcmp(cmd, READ)) {
 		data_struct->request->type = CMD_READ;
 		data_struct->request->offset = SIZE;

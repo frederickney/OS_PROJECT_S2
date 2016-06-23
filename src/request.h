@@ -9,8 +9,8 @@
 
 #include "socket.h"
 
-int send_request(int sd, data *data_struct);
+uint32_t send_request(int sd, data *data_struct);
 
-int set_request(int sd, char *cmd, data *data_struct);
+uint32_t set_request(int sd, char *cmd, data *data_struct);
 
 #endif //OS_PROJECT_S2_REQUEST_H

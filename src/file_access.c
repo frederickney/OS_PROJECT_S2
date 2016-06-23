@@ -29,15 +29,15 @@ void set_offset(int fd, int offset) {
  * @param data *data_struct: structure containing payload, error, request and reply.
  * @return int: error code.
  */
-int read_file(int fd, data *data_struct) {
+uint32_t read_file(int fd, data *data_struct) {
 	int bread = 0;
 	set_offset(fd, data_struct->request->offset);
 	if(0 > (bread = read(fd, data_struct->payload, data_struct->request->length))) {
-		return -3;
+		return 3;
 	}
 	else {
 		if(bread != data_struct->request->length) {
-			return -2;
+			return 2;
 		}
 		else {
 			return 0;
@@ -53,15 +53,15 @@ int read_file(int fd, data *data_struct) {
  * @param data *data_struct: structure containing payload, error, request and reply.
  * @return int: error code.
  */
-int write_file(int fd, data *data_struct) {
+uint32_t write_file(int fd, data *data_struct) {
 	int bwrite = 0;
 	set_offset(fd, data_struct->request->offset);
 	if(0 > (bwrite = write(fd, data_struct->payload, data_struct->request->length))) {
-		return -3;
+		return 3;
 	}
 	else {
 		if(bwrite != data_struct->request->length) {
-			return -2;
+			return 2;
 		}
 		else {
 			return 0;

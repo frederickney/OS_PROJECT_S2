@@ -32,29 +32,36 @@
  * @return data *request: NULL on error.
  */
 cmd_data *get_request(int sd, data *data_struct) {
-	int bread;
+	uint32_t bread;
 	if (0 > (bread = read(sd, (void *) data_struct->request, sizeof(cmd_data)))) {
-		data_struct->error = -1;
+		data_struct->error = 10;
 		return NULL;
 	}
 	else if (0 == bread) {
-		data_struct->error = -10;
+		data_struct->error = 10;
 		return NULL;
 	}
-	printf("HEADER: %i\n", data_struct->request->header);
-	printf("HANDLE: %i\n", data_struct->request->handle);
-	printf("LENGTH: %i\n", (int) data_struct->request->length);
-	printf("OFFSET: %i\n", data_struct->request->offset);
-	printf("TYPE: %i\n", data_struct->request->type);
-	if (data_struct->request->type != CMD_READ && data_struct->request->type != CMD_WRITE && data_struct->request->type != EXIT) {
+	if (data_struct->request->type != htonl(CMD_READ) && data_struct->request->type != htonl(CMD_WRITE) && data_struct->request->type != htonl(EXIT)) {
 		write(STDIN_FILENO, HOSTERROR, strlen(HOSTERROR));
-		data_struct->error = -4;
+		data_struct->error = 4;
 		return NULL;
 	}
-	if (data_struct->request->header != REQUEST) {
+	if (data_struct->request->header != htonl(REQUEST)) {
 		write(STDIN_FILENO, HEADERERROR, strlen(HEADERERROR));
-		data_struct->error = -5;
+		data_struct->error = 5;
 		return NULL;
+	}
+	else {
+		data_struct->request->header = ntohl(data_struct->request->header);
+		data_struct->request->handle = ntohl(data_struct->request->handle);
+		data_struct->request->length = ntohl(data_struct->request->length);
+		data_struct->request->offset = ntohl(data_struct->request->offset);
+		data_struct->request->type = ntohl(data_struct->request->type);
+		printf("HEADER: %i\n", data_struct->request->header);
+		printf("HANDLE: %i\n", data_struct->request->handle);
+		printf("LENGTH: %i\n", data_struct->request->length);
+		printf("OFFSET: %i\n", data_struct->request->offset);
+		printf("TYPE: %i\n", data_struct->request->type);
 	}
 	return data_struct->request;
 }
@@ -80,7 +87,7 @@ char *get_payload(int sd, data *data_struct) {
 	while( i < loop && totalbread != data_struct->request->length) {
 		if (0 > (bread = read(sd, buffer, data_struct->request->length))) {
 			write(STDIN_FILENO, NULLDATA, strlen(NULLDATA));
-			data_struct->error = -6;
+			data_struct->error = 10;
 			return NULL;
 		}
 		else if (bread != data_struct->request->length) {

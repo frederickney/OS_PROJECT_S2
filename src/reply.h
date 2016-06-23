@@ -21,6 +21,6 @@
  * @param cmd_data *request_addr: testing if successful writing or reading on error request_addr is NULL.
  * @return int: error code on send the message
  */
-int reply(int sd, data *data_struct, cmd_data *request_addr);
+uint32_t reply(int sd, data *data_struct, cmd_data *request_addr);
 
 #endif //OS_PROJECT_S2_REPLY_H

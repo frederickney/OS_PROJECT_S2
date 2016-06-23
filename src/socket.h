@@ -23,25 +23,25 @@
 // cmd_data structure received
 typedef struct {
 	/// protocol signature
-	int header;
+	uint32_t header;
 	/// type of messages WRITE or READ
-	int type;
+	uint32_t type;
 	/// offset use to determine where it will start reading or writing
-	int offset;
+	uint32_t offset;
 	/// the length of data which will be readied or written
-	size_t length;
+	uint32_t length;
 	/// unique request identifier
-	int handle;
+	uint32_t handle;
 } cmd_data;
 
 // reply to host structure
 typedef struct {
 	/// protocol signature
-	int header;
+	uint32_t header;
 	/// generated error to specific command
-	int error;
+	uint32_t error;
 	/// unique request identifier it will be the same as the handle on cmd_data
-	int handle;
+	uint32_t handle;
 } message;
 #pragma pack(pop)
 
@@ -54,7 +54,7 @@ typedef struct {
 	/// use to send data from host to server and from server to host
 	char *payload;
 	/// use to correct errors on the server side
-	int error;
+	uint32_t error;
 } data;
 /**
  * generating socket.

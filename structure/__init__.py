@@ -4,7 +4,7 @@ from collections import namedtuple
 
 
 class Request(object):
-	__HEADER = 0x87878787
+	__HEADER = 0x76767676
 
 	def __init__(self, type, offset, length, handle):
 		self.TYPE = type
@@ -18,7 +18,7 @@ class Request(object):
 
 
 class Reply(object):
-	HEADER = 0x76767676
+	HEADER = 0x87878787
 
 	def __init__(self, reply):
 		structure = Struct("!3I")

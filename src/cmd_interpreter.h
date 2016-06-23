@@ -22,10 +22,10 @@
 #define EXIT 0xf
 
 // defining the value of REPLY
-#define REPLY 0x76767676
+#define REPLY 0x87878787
 
 // defining the value of REQUEST
-#define REQUEST 0x87878787
+#define REQUEST 0x76767676
 
 // defining the value of buffer SIZE
 #define SIZE 1024

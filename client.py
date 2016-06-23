@@ -6,7 +6,7 @@ from structure import *
 u = Request(0x0, 1024, 1024, 1)
 
 SD = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-connect = SD.connect(("192.168.1.19", 6600))
+connect = SD.connect(("192.168.161.124", 6600))
 valeurs = u.get_struct()
 request_struct = struct.Struct('!I I I I I')
 reply_struct = struct.Struct('!I I I')

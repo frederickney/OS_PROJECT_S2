@@ -21,17 +21,17 @@
  * @return cmd_data *request: NULL on error
  */
 cmd_data *cmd_interpreter(int sd, int fd, data *data_struct) {
-	int i = 0;
+	uint32_t i = 0;
 	cmd_data *request_addr;
 	request_addr = get_request(sd, data_struct);
-	if (0 > data_struct->error) {
+	if (0 < data_struct->error) {
 		return NULL;
 	}
 	else {
 		data_struct->request = request_addr;
 	}
 	data_struct->payload = malloc(sizeof(char) * data_struct->request->length);
-	switch (data_struct->request->type) {
+	switch (htonl(data_struct->request->type)) {
 		case CMD_READ:
 			i = read_file(fd, data_struct);
 			break;
@@ -45,10 +45,10 @@ cmd_data *cmd_interpreter(int sd, int fd, data *data_struct) {
 			break;
 		case EXIT:
 			data_struct->payload = malloc(sizeof(char));
-			i = -10;
+			i = 10;
 			break;
 		default:
-			i = -4;
+			i = 4;
 		break;
 	}
 	if (0 > i) {

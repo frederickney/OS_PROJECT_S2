@@ -61,6 +61,7 @@ int main(int argc, char **argv) {
 	socklen_t *addr;
 	data *data_struct;
 	int sd, fd, connectd;
+	uint32_t error;
 	if (argc != 2) {
 		usage(argv[0]);
 		return EXIT_FAILURE;
@@ -96,9 +97,12 @@ int main(int argc, char **argv) {
 				data_struct->reply = malloc(sizeof(message));
 				data_struct->error = 0;
 				request_addr = cmd_interpreter(connectd, fd, data_struct);
-				if (-10 != data_struct->error)
-					reply(connectd, data_struct, request_addr);
-				else if(-10 == data_struct->error) {
+				printf("%i\n", data_struct->error);
+				if (10 != data_struct->error) {
+					error = reply(connectd, data_struct, request_addr);
+					printf("%i\n", error);
+				}
+				else if(10 == data_struct->error) {
 					freecontent(data_struct);
 					free(data_struct);
 					data_struct = NULL;
@@ -109,10 +113,10 @@ int main(int argc, char **argv) {
 				free(data_struct);
 				data_struct = NULL;
 			}
+			free(addr);
+			addr = NULL;
+			close(connectd);
 		}
-		free(addr);
-		addr = NULL;
-		close(connectd);
 		close(sd);
 		return EXIT_SUCCESS;
 	}

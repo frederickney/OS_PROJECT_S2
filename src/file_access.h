@@ -27,7 +27,7 @@ void set_offset(int fd, int offset);
  * @param data *data_struct: structure containing payload, error, request and reply.
  * @return int: error code.
  */
-int read_file(int fd, data *data_struct);
+uint32_t read_file(int fd, data *data_struct);
 
 /**
  * write file function
@@ -37,7 +37,7 @@ int read_file(int fd, data *data_struct);
  * @param data *data_struct: structure containing payload, error, request and reply.
  * @return int: error code.
  */
-int write_file(int fd, data *data_struct);
+uint32_t write_file(int fd, data *data_struct);
 
 #endif //OS_PROJECT_S2_FILE_ACCESS_H
 
