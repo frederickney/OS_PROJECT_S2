@@ -13,7 +13,7 @@
 
 #define SUCCESS "Successfull connection to the remote server\n"
 
-#define IP ""
+#define IP "192.168.160.52"
 
 #define PORT "6600"
 
@@ -110,7 +110,7 @@ int main(int argc, char *argv[])
 	data *data_struct;
 	remote.sin_family = AF_INET;
 	remote.sin_port = htons(atoi(PORT));
-	remote.sin_addr.s_addr = inet_addr(argv[1]);
+	remote.sin_addr.s_addr = inet_addr(IP);
     if (0 > (fdsock = socket(AF_INET, SOCK_STREAM, 0)))
         perror("socket");
     if(0 > connect(fdsock, (const struct sockaddr *) &remote, sizeof(struct sockaddr_in))) {

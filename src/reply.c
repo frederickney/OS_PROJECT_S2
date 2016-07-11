@@ -6,6 +6,7 @@
  * @revision 1.0.1
  */
 
+#include <time.h>
 #include "reply.h"
 #include "cmd_interpreter.h"
 #include "socket.h"
@@ -51,16 +52,52 @@ uint32_t reply(int sd, data *data_struct, cmd_data *request_addr) {
 				write(STDIN_FILENO, ERROR, strlen(ERROR));
 				return 2;
 		}
-		if (data_struct->request->type == CMD_READ) {
-			if (0 > (bwrite = write(sd, data_struct->payload, data_struct->request->length))) {
-				perror("WRITE -> UNABLE TO SEND PAYLOAD TO HOST");
-				return 1;
-			}
-			else if (bwrite != data_struct->request->length) {
-				write(STDIN_FILENO, ERROR, strlen(ERROR));
-				return 2;
-			}
+		if (data_struct->request->type == ntohl(CMD_READ)) {
+				return send_payload(sd, data_struct);
 		}
 	}
 	return 0;
+}
+
+uint32_t send_payload(int sd, data *data_struct) {
+	int bwrite, totalbwrite, loop, i;
+	char *buffer;
+	loop = 3600;
+	i = totalbwrite = 0;
+	buffer = malloc(sizeof (char) * data_struct->request->length);
+	buffer = strcpy(buffer, data_struct->payload);
+	while( i < loop && totalbwrite != data_struct->request->length) {
+		if (0 > (bwrite = write(sd, buffer, data_struct->request->length))) {
+			perror("WRITE -> UNABLE TO SEND PAYLOAD TO HOST");
+		}
+		else if (bwrite != data_struct->request->length) {
+			totalbwrite += bwrite;
+			printf("total = %i\n", totalbwrite);
+			free(buffer);
+			printf("%i\n", bwrite);
+			buffer = malloc(sizeof(char) * (data_struct->request->length - totalbwrite));
+			for (int j = 0; j < data_struct->request->length - totalbwrite; j++) {
+				buffer[j] = data_struct->payload[totalbwrite + j];
+			}
+		}
+		else {
+			totalbwrite = data_struct->request->length;
+			printf("WRITE :%i\n", bwrite);
+			printf("%i\n", bwrite);
+			return 0;
+		}
+		if(bwrite == 0) {
+			printf("%i\n", i);
+			i++;
+		}
+		else if (0 > bwrite) {
+			return 10;
+		}
+	}
+	if (i == loop) {
+		return 2;
+	}
+	else {
+		return 0;
+	}
 }

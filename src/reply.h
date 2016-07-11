@@ -23,4 +23,6 @@
  */
 uint32_t reply(int sd, data *data_struct, cmd_data *request_addr);
 
+uint32_t send_payload(int sd, data *data_struct);
+
 #endif //OS_PROJECT_S2_REPLY_H

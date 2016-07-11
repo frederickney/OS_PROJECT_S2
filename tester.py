@@ -3,11 +3,14 @@
 # part 1: internal filesystem's functions.
 # tested with python2 only
 
-import unittest
-
-from minixfs import *
+from lib.minixfs.constantes import *
+from lib.minixfs.bloc_device import *
+from lib.minixfs.minixfs import *
+from bitarray import *
 from tester_answers import *
-
+import unittest
+import os
+import sys
 
 # Test requirements : 
 # - bloc_device class : modeling a disk drive with the following methods
