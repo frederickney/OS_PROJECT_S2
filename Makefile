@@ -4,7 +4,7 @@ SOURCES := $(wildcard *.c)
 CFLAGS=-Wall -pedantic -std=gnu99
 EXE=ftp_mqtt
 HOST=HOST
-OBJ=bin/main.o bin/socket.o bin/cmd_interpreter.o bin/get_request.o bin/reply.o bin/file_opener.o bin/file_access.o bin/stdin_filter.o
+OBJ=bin/main.o bin/socket.o bin/cmd_interpreter.o bin/get_request.o bin/reply.o bin/file_opener.o bin/file_access.o bin/stdin_filter.o bin/server.o
 OBJHOST=bin/onlineClient.o bin/cmd_interpreter.o bin/socket.o bin/stdin_filter.o bin/file_opener.o bin/file_access.o bin/get_request.o bin/request.o bin/get_reply.o
 
 all: $(EXE) $(HOST)

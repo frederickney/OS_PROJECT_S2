@@ -10,6 +10,21 @@
 #define OS_PROJECT_S2_FILE_ACCESS_H
 
 
+#include <stdint.h>
+#include "socket.h"
+
+#define FORKERROR "*** ERROR: unable to gen file\n"
+
+#define GEN_FILE "Generating img file...\t\t\t\t"
+
+#define DD "Executing dd...\n"
+
+#define DONE "[DONE]\n"
+
+#define FAIL "[FAIL]\n"
+
+int genfile(char *filename, char *workfile);
+
 /**
  * reset offset to the beginning of the file and set the offset to specific location
  *
@@ -38,6 +53,8 @@ uint32_t read_file(int fd, data *data_struct);
  * @return int: error code.
  */
 uint32_t write_file(int fd, data *data_struct);
+
+int log_pid(char *pathname, pid_t pid);
 
 #endif //OS_PROJECT_S2_FILE_ACCESS_H
 

@@ -18,4 +18,8 @@
  */
 int open_file(char *path);
 
+int file_exist(char *pathname);
+
+int create_file(char *pathname);
+
 #endif //OS_PROJECT_S2_FILE_OPENER_H

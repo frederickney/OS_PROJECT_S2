@@ -17,7 +17,11 @@ set(SOURCE_FILES
     src/reply.c
     src/reply.h
     src/socket.c
-    src/socket.h)
+    src/socket.h
+    src/server.h
+    src/server.c
+    src/stdin_filter.c
+    src/stdin_filter.h)
 
 set(HOST_SOURCE_FILES
     src/onlineClient.c
