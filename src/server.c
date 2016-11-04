@@ -39,7 +39,7 @@ void freecontent(data *data_struct) {
  *
  * @return EXIT_SUCCESS or EXIT_FAILURE
  */
-int main_server(char **argv, char *workfile, int start) {
+int main_server(char *workfile, int start) {
 	signal(SIGPIPE, SIG_IGN);
 	sigset_t mask;
 	struct sockaddr_in serversock;
@@ -47,13 +47,8 @@ int main_server(char **argv, char *workfile, int start) {
 	socklen_t *addr;
 	data *data_struct;
 	int sd, fd, connectd;
-	if (3 == start) {
-		write(STDIN_FILENO, ALREADY_STOPPED, strlen(ALREADY_STOPPED));
-	}
 	if (1 == start)
 		write(STDIN_FILENO, STARTING, strlen(STARTING));
-	else if (2 == start)
-		write(STDIN_FILENO, RESTARTING, strlen(RESTARTING));
 	else if (3 == start) {
 		write(STDIN_FILENO, STARTING, strlen(STARTING));
 	}

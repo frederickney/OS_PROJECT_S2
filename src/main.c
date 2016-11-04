@@ -6,14 +6,16 @@
  * @revision 1.0.1
  */
 
-
 #include <signal.h>
 #include <stdbool.h>
 #include <sys/wait.h>
+#include <getopt.h>
 #include "reply.h"
 #include "server.h"
 #include "file_access.h"
 #include "stdin_filter.h"
+#include "file_opener.h"
+#include "utils.h"
 
 #define MAIN_FORK_ERROR "*** ERROR: unable to run the server\n"
 
@@ -25,13 +27,17 @@
 
 #define OR " or \0"
 
-#define EXIT_SERVER "exit\0"
+#define EXIT "exit\0"
 
 #define RESTART_SERVER "restart\0"
 
 #define START_SERVER "start\0"
 
+#define START_SERVER2 "-S\0"
+
 #define STOP_SERVER "stop\0"
+
+#define STOP_SERVER2 "-s\0"
 
 #define STOPPING "Stopping the server...\t\t\t\t"
 
@@ -81,6 +87,12 @@
 
 #define USAGE2 " to display usages\n"
 
+#define UNSUPPORTED_CMD ": unknown command \""
+
+#define UNSUPPORTED_CMD2 "\"\n"
+
+#define PROCWD "/proc/\0"
+
 /**
  * Display usage of the program.
  *
@@ -96,7 +108,7 @@ void usage(char *program_name) {
  * Display usage of main process.
  */
 void display_cmd_usage() {
-	write(STDIN_FILENO, EXIT_SERVER, strlen(EXIT_SERVER));
+	write(STDIN_FILENO, EXIT, strlen(EXIT));
 	write(STDIN_FILENO, OR, strlen(OR));
 	write(STDIN_FILENO, EXIT2, strlen(EXIT2));
 	write(STDIN_FILENO, SAFE_EXIT, strlen(SAFE_EXIT));
@@ -109,8 +121,12 @@ void display_cmd_usage() {
 	write(STDIN_FILENO, RESTART2, strlen(RESTART2));
 	write(STDIN_FILENO, RESTART, strlen(RESTART));
 	write(STDIN_FILENO, START_SERVER, strlen(START_SERVER));
+	write(STDIN_FILENO, OR, strlen(OR));
+	write(STDIN_FILENO, START_SERVER2, strlen(START_SERVER2));
 	write(STDIN_FILENO, START, strlen(START));
 	write(STDIN_FILENO, STOP_SERVER, strlen(STOP_SERVER));
+	write(STDIN_FILENO, OR, strlen(OR));
+	write(STDIN_FILENO, STOP_SERVER2, strlen(STOP_SERVER2));
 	write(STDIN_FILENO, STOP, strlen(STOP));
 	write(STDIN_FILENO, GEN_IMG, strlen(GEN_IMG));
 	write(STDIN_FILENO, OR, strlen(OR));
@@ -133,7 +149,19 @@ void display_cmd_usage() {
  *
  * @return EXIT_SUCCESS or EXIT_FAILURE
  */
-int main(int argc, char **argv) {
+int main(int argc, char **argv, char **env_var_ptr) {
+	static struct option options[] = {
+		{"stop", no_argument, NULL, 's'},
+		{"start", required_argument, NULL, 'S'},
+		{"kill", no_argument, NULL, 'k'},
+		{"panel", no_argument, NULL, 'p'},
+		{"status", no_argument, NULL, 't'},
+		{NULL, 0, NULL, 0}
+	};
+	static struct option start_option[] = {
+		{"input", required_argument, NULL, "i"},
+		{NULL, 0, NULL, 0}
+	};
 	pid_t pid = -10;
 	int start = 1;
 	int pid_status = 0;
@@ -142,11 +170,11 @@ int main(int argc, char **argv) {
 	signal(SIGABRT, SIG_IGN);
 	signal(SIGTSTP, SIG_IGN);
 	char buffer[SIZE], *fbuffer;
-	if (argc != 2) {
-		usage(argv[0]);
-		return EXIT_FAILURE;
-	}
-	else {
+	char *cpid;
+	char *process;
+	if (2 == argc) {
+		process = malloc(sizeof(char) * SIZE);
+		cpid = malloc(sizeof(char) * SIZE);
 		char *workfile = malloc(sizeof(char) * SIZE);
 		workfile = strcpy(workfile, argv[1]);
 		workfile = strcat(workfile, ".genserver");
@@ -185,7 +213,7 @@ int main(int argc, char **argv) {
 				}
 				else {
 					fbuffer = read_stdin(buffer);
-					if (0 == strcmp(fbuffer, EXIT_SERVER) || 0 == strcmp(fbuffer, EXIT2)) {
+					if (0 == (strcmp(fbuffer, EXIT)) || 0 == (strcmp(fbuffer, EXIT2))) {
 						if (0 < pid) {
 							if (0 == log_pid(LOG_PID_FILE, pid))
 								return EXIT_SUCCESS;
@@ -194,11 +222,17 @@ int main(int argc, char **argv) {
 						}
 						return EXIT_SUCCESS;
 					}
-					else if (0 == strcmp(fbuffer, KILL_SERVER) || 0 == strcmp(fbuffer, KILL_SERVER2)) {
+					else if (0 == (strcmp(fbuffer, KILL_SERVER)) || 0 == (strcmp(fbuffer, KILL_SERVER2))) {
 						if (0 < pid) {
 							kill(pid, SIGKILL);
 							if (0 == pid_status) {
 								while (wait(&status) != pid);
+							}
+							else {
+								process = strcpy (process, PROCWD);
+								cpid = itoa(pid, cpid);
+								process = strcat(process, cpid);
+								while(file_exist(process));
 							}
 							unlink(LOG_PID_FILE);
 							write(STDIN_FILENO, KILLED, strlen(KILLED));
@@ -211,11 +245,19 @@ int main(int argc, char **argv) {
 							write(STDIN_FILENO, ALREADY_STOPPED, strlen(ALREADY_STOPPED));
 						}
 					}
-					else if (0 == strcmp(fbuffer, RESTART_SERVER) || 0 == strcmp(fbuffer, RESTART2)) {
+					else if (0 == (strcmp(fbuffer, RESTART_SERVER)) || 0 == (strcmp(fbuffer, RESTART2))) {
 						if (0 < pid) {
 							kill(pid, SIGTERM);
 							if (0 == pid_status) {
+								write(STDIN_FILENO, RESTARTING, strlen(RESTARTING));
 								while (wait(&status) != pid);
+							}
+							else {
+								write(STDIN_FILENO, RESTARTING, strlen(RESTARTING));
+								process = strcpy (process, PROCWD);
+								cpid = itoa(pid, cpid);
+								process = strcat(process, cpid);
+								while(file_exist(process));
 							}
 							unlink(LOG_PID_FILE);
 							pid_status = 0;
@@ -224,17 +266,18 @@ int main(int argc, char **argv) {
 						else {
 							pid_status = 0;
 							start = 3;
+							write(STDIN_FILENO, ALREADY_STOPPED, strlen(ALREADY_STOPPED));
 						}
 						pid = fork();
 						if (0 > pid) {
 							write(STDIN_FILENO, MAIN_FORK_ERROR, strlen(MAIN_FORK_ERROR));
 						}
 						if (0 == pid) {
-							return main_server(argv, workfile, start);
+							return main_server(workfile, start);
 						}
 						log_pid(LOG_PID_FILE, pid);
 					}
-					else if (0 == (strcmp(fbuffer, START_SERVER))) {
+					else if (0 == (strcmp(fbuffer, START_SERVER)) || 0 == (strcmp(fbuffer, START_SERVER2))) {
 						if (0 < pid) {
 							write(STDIN_FILENO, ALREADY_STARTED, strlen(ALREADY_STARTED));
 						}
@@ -243,7 +286,7 @@ int main(int argc, char **argv) {
 							pid_status = 0;
 							pid = fork();
 							if (0 == pid) {
-								return main_server(argv, workfile, start);
+								return main_server(workfile, start);
 							}
 							if (0 > pid) {
 								write(STDIN_FILENO, MAIN_FORK_ERROR, strlen(MAIN_FORK_ERROR));
@@ -251,12 +294,18 @@ int main(int argc, char **argv) {
 							log_pid(LOG_PID_FILE, pid);
 						}
 					}
-					else if (0 == strcmp(fbuffer, STOP_SERVER)) {
+					else if (0 == (strcmp(fbuffer, STOP_SERVER)) || 0 == (strcmp(fbuffer, STOP_SERVER2))) {
 						if (0 < pid) {
 							write(STDIN_FILENO, STOPPING, strlen(STOPPING));
 							kill(pid, SIGTERM);
 							if (0 == pid_status) {
 								while (wait(&status) != pid);
+							}
+							else {
+								process = strcpy (process, PROCWD);
+								cpid = itoa(pid, cpid);
+								process = strcat(process, cpid);
+								while(file_exist(process));
 							}
 							unlink(LOG_PID_FILE);
 							write(STDIN_FILENO, DONE, strlen(DONE));
@@ -269,11 +318,11 @@ int main(int argc, char **argv) {
 							write(STDIN_FILENO, ALREADY_STOPPED, strlen(ALREADY_STOPPED));
 						}
 					}
-					else if (0 == strcmp(fbuffer, GEN_IMG) || 0 == strcmp(fbuffer, GEN2)) {
+					else if (0 == (strcmp(fbuffer, GEN_IMG)) || 0 == (strcmp(fbuffer, GEN2))) {
 						if (0 > genfile(argv[1], workfile))
 							return EXIT_FAILURE;
 					}
-					else if (0 == strcmp(fbuffer, STATUS)) {
+					else if (0 == (strcmp(fbuffer, STATUS))) {
 						if (0 > pid) {
 							write(STDIN_FILENO, DEAD, strlen(DEAD));
 						}
@@ -281,21 +330,31 @@ int main(int argc, char **argv) {
 							write(STDIN_FILENO, ALIVE, strlen(ALIVE));
 						}
 					}
-					else if (0 == strcmp(fbuffer, HELP) || 0 == strcmp(fbuffer, HELP2)) {
+					else if (0 == (strcmp(fbuffer, HELP)) || 0 == (strcmp(fbuffer, HELP2))) {
 						display_cmd_usage();
 					}
 					else if (0 == strcmp(fbuffer, "\0")) {
 						//nothing to do
 					}
 					else {
-						display_cmd_usage();
+						write(STDIN_FILENO, argv[0], strlen(argv[0]));
+						write(STDIN_FILENO, UNSUPPORTED_CMD, strlen(UNSUPPORTED_CMD));
+						write(STDIN_FILENO, fbuffer, strlen(fbuffer));
+						write(STDIN_FILENO, UNSUPPORTED_CMD2, strlen(UNSUPPORTED_CMD2));
 					}
 				}
 			}
 		}
 		else {
-			return main_server(argv, workfile, start);
+			return main_server(workfile, start);
 		}
 		return EXIT_SUCCESS;
+	}
+	if (argc == 3) {
+
+	}
+	else {
+		usage(argv[0]);
+		return EXIT_FAILURE;
 	}
 }

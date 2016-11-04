@@ -36,6 +36,6 @@
  *
  * @return EXIT_SUCCESS or EXIT_FAILURE
  */
-int main_server(char **argv, char *workfile, int start);
+int main_server(char *workfile, int start);
 
 #endif //OS_PROJECT_S2_SERVER_H

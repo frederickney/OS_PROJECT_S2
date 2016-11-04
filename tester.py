@@ -24,7 +24,7 @@ import sys
 # - bitarray class : used to store and manipulated inode and zone bitmaps in memory
 #   member ofs minix_filesystem class
 
-testfile="m.img"
+testfile="minixfs_lab1.img"
 workfile=testfile+".gen"
 workfilewrite=testfile+".genwrite"
 string="dd if="+testfile+" of="+workfile+" bs=1024 2>/dev/null"
@@ -32,20 +32,30 @@ os.system(string)
 
 class MinixTester(unittest.TestCase):
 
-    #test if the content returned by read_bloc 
+    #test if the content returned by read_bloc
     #is the one we expect.
     def test_1_bloc_device_read_bloc(self):
         self.disk=bloc_device(BLOCK_SIZE,workfile)
         bloc2=self.disk.read_bloc(2)
         bloc5=self.disk.read_bloc(5)
         bloc7=self.disk.read_bloc(7)
-        bloc24=self.disk.read_bloc(24)  
+        bloc24=self.disk.read_bloc(24)
+        print(bloc2)
+        print("")
+        print("")
+        print("")
+        print("")
+        print("")
+        print("")
+        print(BLOCK2)
+        print("")
+        print("")
         self.assertEqual(bloc2,BLOC2)
         self.assertEqual(bloc5,BLOC5)
         self.assertEqual(bloc7,BLOC7)
         self.assertEqual(bloc24,BLOC24)
-    
-    #exchange bloc2 and bloc5 on the bloc device and test if the content 
+
+    #exchange bloc2 and bloc5 on the bloc device and test if the content
     #returned by read_bloc on it matches.
     def test_2_bloc_device_write_bloc(self):
         string="dd if="+workfile+" of="+workfilewrite+" bs=1024 2>/dev/null"
@@ -71,7 +81,7 @@ class MinixTester(unittest.TestCase):
     def test_3_super_bloc_read_super(self):
         self.disk=bloc_device(BLOCK_SIZE,workfile)
         sb=minix_superbloc(self.disk)
-        
+
         self.assertEqual(sb.s_ninodes,6848)
         self.assertEqual(sb.s_nzones,20480)
         self.assertEqual(sb.s_imap_blocks,1)
@@ -80,7 +90,7 @@ class MinixTester(unittest.TestCase):
         self.assertEqual(sb.s_max_size,268966912)
 
     #inode and zone map tests
-    #we need to copy the original as it was modified 
+    #we need to copy the original as it was modified
     #when testing write_bloc
     def test_4_fs_inode_and_bloc_bitmaps(self):
         self.minixfs=minix_file_system(workfile)
@@ -127,7 +137,7 @@ class MinixTester(unittest.TestCase):
     #blocs have the right numbers.
     def test_8_fs_bmap(self):
         minixfs=minix_file_system(workfile)
-        #bmap of inode 167, an inode with triple indirects 
+        #bmap of inode 167, an inode with triple indirects
         #containing linux-0.95.tgz. Get all blocs of the file
         #direct blocs
         dir_bmap_list=[]
@@ -135,14 +145,14 @@ class MinixTester(unittest.TestCase):
             bmap_bloc=minixfs.bmap(minixfs.inodes_list[167],i)
             dir_bmap_list.append(bmap_bloc)
         self.assertEqual(dir_bmap_list,DIRMAP)
-        
+
         #indirect blocs
         indir_bmap_list=[]
         for i in range(7,512+7):
             bmap_bloc=minixfs.bmap(minixfs.inodes_list[167],i)
             indir_bmap_list.append(bmap_bloc)
         self.assertEqual(indir_bmap_list,INDIRMAP)
-        
+
         #double indirect blocs
         dbl_indir_bmap_list=[]
         for i in range(512+7,1024):
@@ -150,15 +160,15 @@ class MinixTester(unittest.TestCase):
             dbl_indir_bmap_list.append(bmap_bloc)
         self.assertEqual(dbl_indir_bmap_list,DBLINDIRMAP)
 
-    #testing lookup_entry function : give a known inode 
+    #testing lookup_entry function : give a known inode
     #number, and name, expect another inode number
     #do a few lookups
     def test_9_fs_lookup_entry(self):
         minixfs=minix_file_system(workfile)
-        #lookup_entry, inode 798 ("/usr/src/ps-0.97"), lookup for ps.c 
+        #lookup_entry, inode 798 ("/usr/src/ps-0.97"), lookup for ps.c
         inode=minixfs.lookup_entry(minixfs.inodes_list[798],"ps.c")
         self.assertEqual(inode,LOOKUPINODE1)
-        #lookup_entry, inode 212 ("/usr/src/linux/fs/minix"), lookup for namei.c 
+        #lookup_entry, inode 212 ("/usr/src/linux/fs/minix"), lookup for namei.c
         inode=minixfs.lookup_entry(minixfs.inodes_list[212],"namei.c")
         self.assertEqual(inode,LOOKUPINODE2)
 
@@ -174,7 +184,7 @@ class MinixTester(unittest.TestCase):
             namedinodelist.append(namedinode)
         self.assertEqual(namedinodelist,NAMEDINODES)
 
-    #testing i_add_bloc, i_alloc_bloc ? 
+    #testing i_add_bloc, i_alloc_bloc ?
     #function allocate a new bloc for a given file in the bloc list.
     #check its bloc list in the inode, before and after addition
     #check that bmap on the inode return the newly added bloc number
@@ -189,7 +199,7 @@ class MinixTester(unittest.TestCase):
             bmap_bloc=minixfs.bmap(minixfs.inodes_list[56],i)
             dir_bmap_list.append(bmap_bloc)
         self.assertEqual(dir_bmap_list,IALLOC1)
-    
+
         #ialloc bloc 2 and 3 on the inode
         bmap_bloc=minixfs.ialloc_bloc(minixfs.inodes_list[56],2)
         bmap_bloc=minixfs.ialloc_bloc(minixfs.inodes_list[56],3)
@@ -206,15 +216,15 @@ class MinixTester(unittest.TestCase):
         os.system(string)
         minixfs=minix_file_system(workfilewrite)
         self.assertEqual(minixfs.bmap(minixfs.inodes_list[1],0),ROOTNODEBLOCNUM1)
-        
+
         rootnodebloc=minixfs.disk.read_bloc(minixfs.bmap(minixfs.inodes_list[1],0))
         self.assertEqual(rootnodebloc,ROOTNODEBLOC1)
         for i in range(1,57):
             minixfs.add_entry(minixfs.inodes_list[1],"new_ent"+str(i),minixfs.ialloc())
-    
+
         rootnodebloc=minixfs.disk.read_bloc(minixfs.bmap(minixfs.inodes_list[1],0))
         self.assertEqual(rootnodebloc,ROOTNODEBLOC1MOD)
-        
+
         #more complex modification : add enough entries so that a new bloc must be allocated
         #check that the next bloc is still 0
         self.assertEqual(minixfs.bmap(minixfs.inodes_list[1],1),ROOTNODEBLOCNUM2)
@@ -226,7 +236,7 @@ class MinixTester(unittest.TestCase):
         #check its contents
         rootnodebloc2=minixfs.disk.read_bloc(minixfs.bmap(minixfs.inodes_list[1],1))
         self.assertEqual(rootnodebloc2,ROOTNODEBLOC2MOD)
-    
+
     #testing bloc contents and inode maps before and after del_entry
     def test_d_fs_delentry(self):
         NODENUM=798
@@ -235,7 +245,7 @@ class MinixTester(unittest.TestCase):
         os.system(string)
         minixfs=minix_file_system(workfilewrite)
         self.assertEqual(minixfs.bmap(minixfs.inodes_list[NODENUM],0),NODE798BLOCNUM1)
-    
+
         nodebloc=minixfs.disk.read_bloc(minixfs.bmap(minixfs.inodes_list[NODENUM],0))
         self.assertEqual(nodebloc,NODE798BLOC1)
 
